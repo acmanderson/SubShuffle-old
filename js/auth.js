@@ -90,10 +90,15 @@ function getUploadData(pageToken) {
 
     gapi.client.youtube.channels.list(requestOpts).then(function(res) {
         $.each(res.result.items, function(_, v) {
-            var playlistId = v.contentDetails.relatedPlaylists.uploads;
-            userSubs[v.id].uploadsPlaylistId = playlistId;
-            userSubs[v.id].videoCount = parseInt(v.statistics.videoCount);
-            userSubs[v.id].firstFiftyVideos = getFirstFiftyVideos(playlistId);
+            var videoCount = parseInt(v.statistics.videoCount);
+            if (videoCount > 0) {
+                var playlistId = v.contentDetails.relatedPlaylists.uploads;
+                userSubs[v.id].uploadsPlaylistId = playlistId;
+                userSubs[v.id].videoCount = videoCount;
+                userSubs[v.id].firstFiftyVideos = getFirstFiftyVideos(playlistId);
+            } else {
+                delete userSubs[v.id];
+            }
         });
         var nextPageToken = res.result.nextPageToken;
         if (nextPageToken) {
@@ -136,7 +141,7 @@ function addChannelsToNav() {
         $('#channel-nav').append(html);
     });
     $(".mdl-switch__label").each(function() {
-        $clamp(this, {clamp: 1, splitOnChars: [' ', '']})
+        $clamp(this, {clamp: 1})
     });
 
     componentHandler.upgradeAllRegistered();
