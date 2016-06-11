@@ -135,6 +135,10 @@ function addChannelsToNav() {
                     </a>`;
         $('#channel-nav').append(html);
     });
+    $(".mdl-switch__label").each(function() {
+        $clamp(this, {clamp: 1, splitOnChars: [' ', '']})
+    });
+
     componentHandler.upgradeAllRegistered();
     loadRandomVideo();
 }

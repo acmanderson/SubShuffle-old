@@ -49,12 +49,9 @@ html, body {
     margin-right: 8px;
 }
 
-.mdl-switch {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
 .mdl-switch__label {
     font-size: 14px;
+    width: calc(100% - 26px);
+    word-wrap: break-word;
+
 }
