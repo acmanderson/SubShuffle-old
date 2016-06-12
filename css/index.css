@@ -53,5 +53,12 @@ html, body {
     font-size: 14px;
     width: calc(100% - 26px);
     word-wrap: break-word;
+}
 
+.select-button-padding {
+    width: 50%;
+}
+
+.select-button {
+    padding: 0 10px;
 }

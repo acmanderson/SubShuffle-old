@@ -15,7 +15,7 @@
     <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
     <script>
         $(document).ready(function() {
-            $('#prev-btn').click(function () {
+            $('#prev-btn').click(function() {
                 currentVideo--;
                 loadVideo(loadedVideos[currentVideo]);
             });
@@ -24,9 +24,19 @@
                 loadRandomVideo();
             });
 
-            $('#next-btn').click(function () {
+            $('#next-btn').click(function() {
                 currentVideo++;
                 loadVideo(loadedVideos[currentVideo]);
+            });
+
+            $('#select-all-btn').click(function() {
+                $('.mdl-switch__input').prop('checked', true);
+                $('.mdl-switch').addClass('is-checked');
+            });
+
+            $('#deselect-all-btn').click(function() {
+                $('.mdl-switch__input').prop('checked', false);
+                $('.mdl-switch').removeClass('is-checked');
             });
         });
     </script>
@@ -55,7 +65,22 @@
     </header>
     <div class="mdl-layout__drawer mdl-color--grey-400">
         <span class="mdl-layout-title">Channels</span>
-        <nav class="mdl-navigation mdl-color--grey-600" id="channel-nav"></nav>
+        <nav class="mdl-navigation mdl-color--grey-600" id="channel-nav">
+            <a class="mdl-navigation__link mdl-color--grey-300 mdl-color-text--grey-600">
+                <div class="select-button-padding"></div>
+                <div class="select-button">
+                    <button class="mdl-button mdl-js-button mdl-button--icon mdl-js-ripple-effect mdl-button--colored" id="select-all-btn">
+                        <i class="material-icons">check_box</i>
+                    </button>
+                </div>
+                <div class="select-button">
+                    <button class="mdl-button mdl-js-button mdl-button--icon mdl-js-ripple-effect mdl-button--colored" id="deselect-all-btn">
+                        <i class="material-icons">check_box_outline_blank</i>
+                    </button>
+                </div>
+                <div class="select-button-padding"></div>
+            </a>
+        </nav>
     </div>
     <main class="mdl-layout__content mdl-color--grey-800">
         <div class="mdl-grid">

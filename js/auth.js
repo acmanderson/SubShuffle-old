@@ -136,7 +136,7 @@ function addChannelsToNav() {
                             <input type="checkbox" id="switch-${k}" class="mdl-switch__input" value="${k}" checked/>
                             <span class="mdl-switch__label">${v.title}</span>
                         </label>
-                        <img class="nav-image mdl-shadow--2dp material-icons" src="${v.thumbnails.default.url}">
+                        <img class="nav-image mdl-shadow--2dp" src="${v.thumbnails.default.url}">
                     </a>`;
         $('#channel-nav').append(html);
     });
@@ -174,7 +174,6 @@ function loadVideo(videoData) {
         $('#next-btn').prop('disabled', false);
     }
 
-    var playerHtml;
     var queryString = {
         autoplay: 1,
         list: videoData.playlist
