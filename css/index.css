@@ -62,3 +62,31 @@ html, body {
 .select-button {
     padding: 0 10px;
 }
+
+#login-overlay {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    z-index: 100;
+    display: none;
+}
+
+#loading-overlay {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    z-index: 100;
+}
+
+#login-card {
+    margin-top: 33vh;
+    min-height: 0;
+}
+
+#loading-spinner {
+    margin-top: 45vh;
+}
+
+#login-card-title {
+    color: #fff;
+}

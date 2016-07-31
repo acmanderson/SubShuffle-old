@@ -21,13 +21,16 @@ function handleAuthResult(authResult) {
     if (authResult && !authResult.error) {
         loadAPIClientInterfaces();
     } else {
-        // Make the #login-link clickable. Attempt a non-immediate OAuth 2.0
-        // client flow. The current function is called when that flow completes.
-        gapi.auth.authorize({
-            client_id: OAUTH2_CLIENT_ID,
-            scope: OAUTH2_SCOPES,
-            immediate: false
-        }, handleAuthResult);
+        $('#login-overlay').fadeIn(function() {
+            $('#loading-overlay').hide();
+        });
+        $('#login-button').click(function() {
+            gapi.auth.authorize({
+                client_id: OAUTH2_CLIENT_ID,
+                scope: OAUTH2_SCOPES,
+                immediate: false
+            }, handleAuthResult);
+        });
     }
 }
 
@@ -145,6 +148,8 @@ function addChannelsToNav() {
     });
 
     componentHandler.upgradeAllRegistered();
+    $('#login-overlay').fadeOut();
+    $('#loading-overlay').fadeOut();
     loadRandomVideo();
 }
 
