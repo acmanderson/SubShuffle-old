@@ -54,7 +54,8 @@ function getUploadData(pageToken) {
             var videoCount = parseInt(v.statistics.videoCount);
             if (videoCount > 0) {
                 userSubs[v.id].uploadsPlaylistId = v.contentDetails.relatedPlaylists.uploads;
-                userSubs[v.id].videoCount = videoCount;
+                // TODO: update paging calculation to allow for more than 7936 videos
+                userSubs[v.id].videoCount = Math.min(videoCount, 7936);
                 userSubs[v.id].videoList = rangeArray(videoCount);
             } else {
                 delete userSubs[v.id];
