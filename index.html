@@ -3,7 +3,15 @@
 <head lang="en">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="msapplication-config" content="img/browserconfig.xml">
+    <meta name="theme-color" content="#ffffff">
     <title>SubShuffle</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="icon" type="image/png" href="img/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="img/favicon-16x16.png" sizes="16x16">
+    <link rel="manifest" href="img/manifest.json">
+    <link rel="mask-icon" href="img/safari-pinned-tab.svg" color="#5bbad5">
+    <link rel="shortcut icon" href="img/favicon.ico">
     <link rel="stylesheet" href="https://storage.googleapis.com/code.getmdl.io/1.1.3/material.red-amber.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" type="text/css">
@@ -26,12 +34,12 @@
                     <h2 class="mdl-card__title-text">SubShuffle</h2>
                 </div>
                 <div class="mdl-card__supporting-text">
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                    Mauris sagittis pellentesque lacus eleifend lacinia...
+                    SubShuffle requires read-only access to your YouTube account in order to view your subscriptions
+                    and to play videos. Click the "Sign In" button to authenticate with your YouTube account.
                 </div>
                 <div class="mdl-card__actions mdl-card--border">
                     <a class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" id="login-button">
-                        Login
+                        Sign In
                     </a>
                 </div>
             </div>
@@ -80,17 +88,16 @@
         <footer class="mdl-mini-footer mdl-color--grey-900">
             <div class="mdl-mini-footer__left-section">
                 <ul class="mdl-mini-footer__link-list">
-                    <li><a href="#">Help</a></li>
-                    <li><a href="#">Privacy & Terms</a></li>
-                </ul>
-            </div>
-            <div class="mdl-mini-footer__right-section">
-                <ul class="mdl-mini-footer__link-list">
                     <li>
                         <iframe src="https://ghbtns.com/github-btn.html?user=acmanderson&repo=SubShuffle&type=star&count=true"
                                 frameborder="0" scrolling="0" width="170px" height="20px"></iframe>
                     </li>
                 </ul>
+            </div>
+            <div class="mdl-mini-footer__right-section">
+                <a href="https://youtube.com">
+                    <img id="youtube-logo" src="https://developers.google.com/youtube/images/pwrdByYT-white.png">
+                </a>
             </div>
         </footer>
     </main>
