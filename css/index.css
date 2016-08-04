@@ -40,7 +40,11 @@ html, body {
 .nav-image {
     border-radius: 50%;
     border: 2px white solid;
-    height: 24px;
+    width: 24px;
+}
+
+#toggle-all-icon {
+    padding: 2px;
 }
 
 #shuffle-btn {

@@ -74,8 +74,8 @@ function getUploadData(pageToken) {
 function addChannelsToNav() {
     $.each(userSubs, function(k, v) {
         var html = `<a class="mdl-navigation__link mdl-color--grey-300 mdl-color-text--grey-600" id="chan-${k}">
-                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect" for="switch-${k}">
-                            <input type="checkbox" id="switch-${k}" class="mdl-switch__input" value="${k}" checked/>
+                        <label class="mdl-switch mdl-js-switch mdl-js-ripple-effect channel-switch-label" for="switch-${k}">
+                            <input type="checkbox" id="switch-${k}" class="mdl-switch__input channel-switch" value="${k}" checked/>
                             <span class="mdl-switch__label">${v.title}</span>
                         </label>
                         <img class="nav-image mdl-shadow--2dp" src="${v.thumbnails.default.url}">
@@ -150,6 +150,9 @@ function getRandomChannelAndIndex() {
     $('.mdl-switch__input:checked').each(function() {
         selectedChannels.push($(this).val());
     });
+
+    if (selectedChannels.length == 0) return null;
+
     var validChannelIds = Object.keys(userSubs).filter(function(item) {
         return selectedChannels.indexOf(item) >= 0;
     });
@@ -171,6 +174,11 @@ function getRandomChannelAndIndex() {
 
 function loadRandomVideo() {
     var videoData = getRandomChannelAndIndex();
+    if (videoData == null) {
+        $('#shuffle-btn').prop('disabled', false);
+        return
+    }
+
     var request = buildVideoRequest(videoData);
     request.then(function(res) {
         var videoId = res.result.items[0].snippet.resourceId.videoId;
@@ -199,12 +207,12 @@ $('#next-btn').click(function() {
     loadVideo(loadedVideos[currentVideo]);
 });
 
-$('#select-all-btn').click(function() {
-    $('.mdl-switch__input').prop('checked', true);
-    $('.mdl-switch').addClass('is-checked');
-});
-
-$('#deselect-all-btn').click(function() {
-    $('.mdl-switch__input').prop('checked', false);
-    $('.mdl-switch').removeClass('is-checked');
+$('#switch-toggle-all').change(function() {
+    if (this.checked) {
+        $('.channel-switch').prop('checked', true);
+        $('.channel-switch-label').addClass('is-checked');
+    } else {
+        $('.channel-switch').prop('checked', false);
+        $('.channel-switch-label').removeClass('is-checked');
+    }
 });
