@@ -1,17 +1,11 @@
-import React from 'react';
-import Drawer from 'material-ui/Drawer';
-import {List, ListItem} from 'material-ui/List';
-import Avatar from 'material-ui/Avatar';
-import Toggle from 'material-ui/Toggle';
-import Checkbox from 'material-ui/Checkbox';
-import TextTruncate from 'react-text-truncate';
-import {spacing, typography, zIndex} from 'material-ui/styles';
-import {
-  red500, cyan700, red700,
-  pinkA400, pinkA100, pinkA200,
-  grey600, grey300, grey400, grey500,
-  white, darkBlack, fullWhite,
-} from 'material-ui/styles/colors';
+import React from "react";
+import Drawer from "material-ui/Drawer";
+import {List, ListItem} from "material-ui/List";
+import Avatar from "material-ui/Avatar";
+import Checkbox from "material-ui/Checkbox";
+import TextTruncate from "react-text-truncate";
+import {spacing, typography, zIndex} from "material-ui/styles";
+import {red700} from "material-ui/styles/colors";
 
 const styles = {
   logo: {
@@ -27,7 +21,7 @@ const styles = {
 
 function Channel(props) {
     function handleChecked(_, checked) {
-        props.handleChannelSelected(props.channelId, checked);
+        props.onChannelToggled(props.channelId, checked);
     }
     return (
         <ListItem
@@ -55,10 +49,10 @@ function ChannelDrawer(props) {
         return (
             <Channel
                 title={channel.title}
-                iconUrl={channel.thumbnails.default.url}
-                selected={channel.selected}
+                iconUrl={channel.thumbnailUrl}
+                selected={props.selectedChannels.indexOf(channelId) != -1}
                 channelId={channelId}
-                handleChannelSelected={props.handleChannelSelected}
+                onChannelToggled={props.onChannelToggled}
                 key={channelId}
             />
         )
@@ -72,7 +66,10 @@ function ChannelDrawer(props) {
             </div>
             <ListItem
                 primaryText="Toggle All"
-                leftCheckbox={<Checkbox checked={props.toggleAllChecked} onCheck={props.handleAllChannelsSelected}/>}
+                leftCheckbox={<Checkbox
+                    checked={props.toggleAllChecked}
+                    onCheck={props.onAllChannelsToggled}
+                />}
                 style={{fontSize: "14px"}}
             />
             <List>

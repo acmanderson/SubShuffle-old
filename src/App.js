@@ -37,7 +37,7 @@ window.googleApiClientReady = function () {
 };
 
 var App = React.createClass({
-    mixins: [ReactScriptLoaderMixin],
+    // mixins: [ReactScriptLoaderMixin],
     getInitialState: () => ({
         scriptLoading: true,
         scriptLoadError: false,
