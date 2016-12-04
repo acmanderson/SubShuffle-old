@@ -1,63 +1,47 @@
 import React, {Component} from "react";
 import {connect} from "react-redux";
 import injectTapEventPlugin from "react-tap-event-plugin";
-import { createAction } from 'redux-actions';
-import ChannelDrawer from "./ChannelDrawer"
+import YouTube from "react-youtube";
+import {createActions} from "redux-actions";
+import ChannelDrawer from "./ChannelDrawer";
+import Theme from "../Theme";
 import CircularProgress from "material-ui/CircularProgress";
-import Theme from "./Theme";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import getMuiTheme from "material-ui/styles/getMuiTheme";
 import {grey800} from "material-ui/styles/colors";
-import IconButton from 'material-ui/IconButton';
-import spacing from 'material-ui/styles/spacing';
-import AvShuffle from 'material-ui/svg-icons/av/shuffle';
-import AvSkipNext from 'material-ui/svg-icons/av/skip-next';
-import AvSkipPrevious from 'material-ui/svg-icons/av/skip-previous';
-import withWidth, {MEDIUM, LARGE} from 'material-ui/utils/withWidth';
-import YouTube from 'react-youtube';
-import Paper from 'material-ui/Paper';
+import spacing from "material-ui/styles/spacing";
+import IconButton from "material-ui/IconButton";
+import AvShuffle from "material-ui/svg-icons/av/shuffle";
+import AvSkipNext from "material-ui/svg-icons/av/skip-next";
+import AvSkipPrevious from "material-ui/svg-icons/av/skip-previous";
+import withWidth, {LARGE} from "material-ui/utils/withWidth";
+import Paper from "material-ui/Paper";
 import AppBar from "material-ui/AppBar";
-
-
 
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
 
-const addChannel = createAction('ADD_CHANNEL');
-const updateChannel = createAction('UPDATE_CHANNEL');
-const deleteChannel = createAction('DELETE_CHANNEL');
-const setChannelsLoaded = createAction('CHANNELS_LOADED');
-const videoLoaded = createAction('VIDEO_LOADED');
-const channelToggled = createAction('CHANNEL_TOGGLED');
-const setToggleAllChecked = createAction('SET_TOGGLE_ALL_CHECKED');
-const setChannelDrawerOpen = createAction('SET_CHANNEL_DRAWER_OPEN');
-const setMuiTheme = createAction('SET_MUI_THEME');
-const previousVideoLoaded = createAction('PREVIOUS_VIDEO_LOADED');
-const nextVideoLoaded = createAction('NEXT_VIDEO_LOADED');
-
-const styles = {
-    appBar: {
-        position: 'fixed',
-        zIndex: getMuiTheme(Theme).zIndex.appBar + 1,
-        top: 0,
-    },
-    root: {
-        paddingTop: spacing.desktopKeylineIncrement,
-        paddingBottom: spacing.desktopGutter,
-        minHeight: 400,
-        backgroundColor: grey800,
-    },
-    content: {
-        margin: spacing.desktopGutter,
-        marginBottom: 0,
-        height: `calc(100vh - 2 * ${spacing.desktopGutter}px - ${spacing.desktopKeylineIncrement}px)`,
-    },
-    paper: {
-        padding: `20px 20px`,
-        height: `100%`,
-    },
-};
+const {
+    setMainState,
+    addChannel,
+    updateChannel,
+    deleteChannel,
+    toggleChannel,
+    toggleAllChannels,
+    loadRandomVideo,
+    loadPreviousVideo,
+    loadNextVideo,
+} = createActions(
+    'SET_MAIN_STATE',
+    'ADD_CHANNEL',
+    'UPDATE_CHANNEL',
+    'DELETE_CHANNEL',
+    'TOGGLE_CHANNEL',
+    'TOGGLE_ALL_CHANNELS',
+    'LOAD_RANDOM_VIDEO',
+    'LOAD_PREVIOUS_VIDEO',
+    'LOAD_NEXT_VIDEO',
+);
 
 function indexToToken(index) {
     let token = [];
@@ -66,7 +50,7 @@ function indexToToken(index) {
         const range = ranges[i].split("");
         const temp = index % range.length;
         token.push(range[temp]);
-        index = parseInt(index / range.length);
+        index = parseInt(index / range.length, 10);
     }
     return `C${token[1]}${token[0]}${token[2]}EAA`;
 }
@@ -75,6 +59,8 @@ class Main extends Component {
     constructor(props) {
         super(props);
 
+        // some material-ui components need the muiTheme context which
+        // requires using component state
         this.state = {muiTheme: getMuiTheme(Theme)};
 
         const {channelsLoaded} = props;
@@ -104,8 +90,8 @@ class Main extends Component {
 
         yt.subscriptions.list(requestOpts).then(res => {
             const items = res.result.items;
-            for (const channelId in items) {
-                const snippet = items[channelId].snippet;
+            for (let i = 0; i < items.length; i++) {
+                const snippet = items[i].snippet;
                 dispatch(addChannel({
                     [snippet.resourceId.channelId]: {
                         title: snippet.title,
@@ -124,7 +110,7 @@ class Main extends Component {
     }
 
     getUploadData(pageToken = null) {
-        const { yt, channels, dispatch } = this.props;
+        const {yt, channels, dispatch} = this.props;
         let requestOpts = {
             part: 'statistics,contentDetails',
             maxResults: 50,
@@ -136,38 +122,38 @@ class Main extends Component {
         }
 
         yt.channels.list(requestOpts).then(res => {
-           const items = res.result.items;
-           for (const i in items) {
-               const channelData = items[i];
-               const channelId = channelData.id;
-               const videoCount = parseInt(channelData.statistics.videoCount);
-               if (videoCount > 0) {
-                   dispatch(updateChannel({
-                       channelId,
-                       data: {
-                           uploadsPlaylistId: channelData.contentDetails.relatedPlaylists.uploads,
-                           // TODO: update paging calculation to allow for more than 7936 videos
-                           videoCount: Math.min(videoCount, 7936),
-                           videoList: [...Array(videoCount).keys()],
-                       }
-                   }));
-               } else {
+            const items = res.result.items;
+            for (let i = 0; i < items.length; i++) {
+                const channelData = items[i];
+                const channelId = channelData.id;
+                const videoCount = parseInt(channelData.statistics.videoCount, 10);
+                if (videoCount > 0) {
+                    dispatch(updateChannel({
+                        channelId,
+                        data: {
+                            uploadsPlaylistId: channelData.contentDetails.relatedPlaylists.uploads,
+                            // TODO: update paging calculation to allow for more than 7936 videos
+                            videoCount: Math.min(videoCount, 7936),
+                            videoList: [...Array(videoCount).keys()],
+                        }
+                    }));
+                } else {
                     dispatch(deleteChannel(channelId));
-               }
-           }
+                }
+            }
 
-           const nextPageToken = res.result.nextPageToken;
-           if (nextPageToken) {
-               this.getUploadData(nextPageToken);
-           } else {
-               this.loadRandomVideo();
-               dispatch(setChannelsLoaded(true));
-           }
+            const nextPageToken = res.result.nextPageToken;
+            if (nextPageToken) {
+                this.getUploadData(nextPageToken);
+            } else {
+                this.loadRandomVideo();
+                dispatch(setMainState({channelsLoaded: true}));
+            }
         }, reason => console.error(reason));
     }
 
     loadRandomVideo() {
-        const { yt, dispatch } = this.props;
+        const {yt, dispatch} = this.props;
         const videoData = this.getRandomChannelAndIndex();
         const token = indexToToken(videoData.index);
         const requestOpts = {
@@ -181,12 +167,12 @@ class Main extends Component {
 
         yt.playlistItems.list(requestOpts).then(res => {
             const videoId = res.result.items[0].snippet.resourceId.videoId;
-            dispatch(videoLoaded(videoId));
+            dispatch(loadRandomVideo(videoId));
         }, reason => console.error(reason))
     }
 
     getRandomChannelAndIndex() {
-        const { selectedChannels, channels, dispatch } = this.props;
+        const {selectedChannels, channels, dispatch} = this.props;
         const randomChannelId = selectedChannels[selectedChannels.length * Math.random() << 0];
         const randomChannelData = channels[randomChannelId];
         const videoList = randomChannelData.videoList;
@@ -207,17 +193,41 @@ class Main extends Component {
         }
     }
 
+    getStyles() {
+        return {
+            appBar: {
+                position: 'fixed',
+                zIndex: this.state.muiTheme.zIndex.appBar + 1,
+                top: 0,
+            },
+            root: {
+                paddingTop: spacing.desktopKeylineIncrement,
+                paddingBottom: spacing.desktopGutter,
+                minHeight: 400,
+                backgroundColor: grey800,
+            },
+            content: {
+                margin: spacing.desktopGutter,
+                marginBottom: 0,
+                height: `calc(100vh - 2 * ${spacing.desktopGutter}px - ${spacing.desktopKeylineIncrement}px)`,
+            },
+            paper: {
+                padding: `20px 20px`,
+                height: `100%`,
+            },
+        };
+    }
+
     render() {
-        const { channelsLoaded, currentIndex, loadedVideos, channels, selectedChannels, toggleAllChecked, dispatch } = this.props;
+        const {channelsLoaded, currentIndex, loadedVideos, channels, selectedChannels, toggleAllChecked, dispatch} = this.props;
         let channelDrawerOpen = this.props.channelDrawerOpen;
+        const styles = this.getStyles();
 
         if (!channelsLoaded) {
             return (
-                <MuiThemeProvider muiTheme={this.state.muiTheme}>
-                    <div style={{width: `100vw`, height: `100vh`, backgroundColor: grey800}}>
-                        <CircularProgress size={40} style={{left: `calc(50% - 20px)`, top: `calc(50% - 20px)`,}}/>
-                    </div>
-                </MuiThemeProvider>
+                <div style={{width: `100vw`, height: `100vh`, backgroundColor: grey800}}>
+                    <CircularProgress size={40} style={{left: `calc(50% - 20px)`, top: `calc(50% - 20px)`,}}/>
+                </div>
             )
         }
 
@@ -231,27 +241,27 @@ class Main extends Component {
                 zIndex: styles.appBar.zIndex - 1,
             };
             styles.root.paddingLeft = 256;
-            // styles.footer.paddingLeft = 256;
         }
 
         return (
             <div>
                 <AppBar
                     title="SubShuffle"
-                    onLeftIconButtonTouchTap={() => dispatch(setChannelDrawerOpen(!channelDrawerOpen))}
+                    onLeftIconButtonTouchTap={() => dispatch(setMainState({channelDrawerOpen: !channelDrawerOpen}))}
                     style={styles.appBar}
                     iconElementRight={
                         <div>
                             <IconButton
-                                disabled={currentIndex == 0}
-                                onTouchTap={() => dispatch(previousVideoLoaded())}
+                                disabled={currentIndex === 0}
+                                onTouchTap={() => dispatch(loadPreviousVideo())}
                             ><AvSkipPrevious /></IconButton>
                             <IconButton
+                                disabled={selectedChannels.length === 0}
                                 onTouchTap={() => this.loadRandomVideo()}
                             ><AvShuffle /></IconButton>
                             <IconButton
-                                disabled={currentIndex == loadedVideos.length - 1}
-                                onTouchTap={() => dispatch(nextVideoLoaded())}
+                                disabled={currentIndex === loadedVideos.length - 1}
+                                onTouchTap={() => dispatch(loadNextVideo())}
                             ><AvSkipNext /></IconButton>
                         </div>
                     }
@@ -265,7 +275,7 @@ class Main extends Component {
                                     width: `100%`,
                                     height: `100%`,
                                     playerVars: {
-                                        autoplay: 1,
+                                        autoplay: 0,
                                     },
                                 }}
                             />
@@ -275,15 +285,13 @@ class Main extends Component {
                 <ChannelDrawer
                     open={channelDrawerOpen}
                     docked={docked}
-                    onRequestChange={channelDrawerOpen => dispatch(setChannelDrawerOpen(channelDrawerOpen))}
+                    onRequestChange={channelDrawerOpen => dispatch(setMainState({channelDrawerOpen}))}
                     channels={channels}
                     selectedChannels={selectedChannels}
-                    onChannelToggled={(channelId, checked) => dispatch(channelToggled({channelId, checked}))}
+                    onChannelToggled={(channelId, checked) => dispatch(toggleChannel({channelId, checked}))}
                     onAllChannelsToggled={(_, checked) => {
-                        for (const channelId in channels) {
-                            dispatch(channelToggled({channelId, checked}));
-                        }
-                        dispatch(setToggleAllChecked(checked));
+                        dispatch(toggleAllChannels(checked));
+                        dispatch(setMainState({toggleAllChecked: checked}));
                     }}
                     toggleAllChecked={toggleAllChecked}
                     style={styles.navDrawer}
@@ -297,14 +305,13 @@ Main.childContextTypes = {
     muiTheme: React.PropTypes.object.isRequired,
 };
 
-export default connect(state => ({
-    channels: state.channels.channels,
-    selectedChannels: state.channels.selectedChannels,
-    yt: state.gapi.client.youtube,
-    channelsLoaded: state.channelsLoaded,
-    loadedVideos: state.loadedVideos.loadedVideos,
-    currentIndex: state.loadedVideos.currentIndex,
-    muiTheme: state.muiTheme,
-    toggleAllChecked: state.toggleAllChecked,
-    channelDrawerOpen: state.channelDrawerOpen,
-}))(Main);
+export default withWidth()(connect(state => ({
+    channelsLoaded: state.mainState.channelsLoaded,
+    toggleAllChecked: state.mainState.toggleAllChecked,
+    channelDrawerOpen: state.mainState.channelDrawerOpen,
+    yt: state.loginState.gapi.client.youtube,
+    channels: state.channelState.channels,
+    selectedChannels: state.channelState.selectedChannels,
+    loadedVideos: state.loadedVideoState.loadedVideos,
+    currentIndex: state.loadedVideoState.currentIndex,
+}))(Main));

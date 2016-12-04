@@ -4,7 +4,7 @@ import Theme from "./Theme";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import getMuiTheme from "material-ui/styles/getMuiTheme";
 import AppBar from "material-ui/AppBar";
-import ChannelDrawer from "./ChannelDrawer";
+import ChannelDrawer from "./components/ChannelDrawer";
 import injectTapEventPlugin from "react-tap-event-plugin";
 import withWidth, {MEDIUM, LARGE} from 'material-ui/utils/withWidth';
 import YouTube from 'react-youtube';

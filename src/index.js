@@ -1,40 +1,27 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import {createStore, applyMiddleware} from "redux";
+import {createStore} from "redux";
 import {Provider} from "react-redux";
-import thunkMiddleware from "redux-thunk";
 import rootReducer from "./reducers";
-import { Router, Route, browserHistory, IndexRedirect } from 'react-router';
-// import App from "./App";
-import Login from "./Login";
-import Main from "./Main";
+import {Router, Route, browserHistory} from "react-router";
+import Login from "./components/Login";
+import Main from "./components/Main";
 import "./index.css";
 
-const store = createStore(
-    rootReducer,
-    applyMiddleware(
-        thunkMiddleware,
-    ),
-);
+const store = createStore(rootReducer);
 
-function App(props) {
-    return (
-        props.children
-    );
-}
-
-function redirectUnlessAuthenticated(nextState, replace) {
-    const {authenticated} = store.getState();
-    if (!authenticated) {
-        replace('/login');
+function redirectUnlessAuthenticated(_, replace) {
+    const {loginState: {userAuthenticated}} = store.getState();
+    if (!userAuthenticated) {
+        replace('/login/');
     }
 }
 
 ReactDOM.render(
     <Provider store={store}>
         <Router history={browserHistory}>
-            <Route path="/" component={Main} onEnter={redirectUnlessAuthenticated} />
-            <Route path="/login" component={Login} />
+            <Route path="/" component={Main} onEnter={redirectUnlessAuthenticated}/>
+            <Route path="/login/" component={Login}/>
         </Router>
     </Provider>,
     document.getElementById('root')
