@@ -3,6 +3,7 @@ import TextTruncate from "react-text-truncate";
 import Drawer from "material-ui/Drawer";
 import Avatar from "material-ui/Avatar";
 import Toggle from "material-ui/Toggle";
+import Divider from 'material-ui/Divider';
 import ActionCheckCircle from "material-ui/svg-icons/action/check-circle";
 import {List, ListItem} from "material-ui/List";
 import {spacing, typography} from "material-ui/styles";
@@ -13,7 +14,6 @@ const styles = {
         fontSize: 24,
         color: typography.textFullWhite,
         lineHeight: `${spacing.desktopKeylineIncrement}px`,
-        fontWeight: typography.fontWeightLight,
         backgroundColor: red700,
         paddingLeft: spacing.desktopGutter,
         marginBottom: 8,
@@ -69,20 +69,22 @@ function ChannelDrawer(props) {
         )
     });
     listItems.unshift(
-        <ListItem
-            primaryText="Toggle All"
-            leftAvatar={<ActionCheckCircle
-                size={24}
-                color={red700}
-                style={styles.avatarStyle}
-            />}
-            rightToggle={<Toggle
-                toggled={props.toggleAllChecked}
-                onToggle={props.onAllChannelsToggled}
-            />}
-            style={styles.listItemStyle}
-            key="toggleall"
-        />
+        <div key="toggleall">
+            <ListItem
+                primaryText="Toggle All"
+                leftAvatar={<ActionCheckCircle
+                    size={24}
+                    color={red700}
+                    style={styles.avatarStyle}
+                />}
+                rightToggle={<Toggle
+                    toggled={props.toggleAllChecked}
+                    onToggle={props.onAllChannelsToggled}
+                />}
+                style={styles.listItemStyle}
+            />
+            <Divider />
+        </div>
     );
 
     return (

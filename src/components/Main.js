@@ -5,7 +5,7 @@ import YouTube from "react-youtube";
 import {createActions} from "redux-actions";
 import ChannelDrawer from "./ChannelDrawer";
 import Theme from "../Theme";
-import CircularProgress from "material-ui/CircularProgress";
+import Loading from "./Loading";
 import getMuiTheme from "material-ui/styles/getMuiTheme";
 import {grey800} from "material-ui/styles/colors";
 import spacing from "material-ui/styles/spacing";
@@ -13,9 +13,12 @@ import IconButton from "material-ui/IconButton";
 import AvShuffle from "material-ui/svg-icons/av/shuffle";
 import AvSkipNext from "material-ui/svg-icons/av/skip-next";
 import AvSkipPrevious from "material-ui/svg-icons/av/skip-previous";
+import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
 import withWidth, {LARGE} from "material-ui/utils/withWidth";
 import Paper from "material-ui/Paper";
 import AppBar from "material-ui/AppBar";
+import MenuItem from 'material-ui/MenuItem';
+import IconMenu from 'material-ui/IconMenu';
 
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
@@ -225,9 +228,7 @@ class Main extends Component {
 
         if (!channelsLoaded) {
             return (
-                <div style={{width: `100vw`, height: `100vh`, backgroundColor: grey800}}>
-                    <CircularProgress size={40} style={{left: `calc(50% - 20px)`, top: `calc(50% - 20px)`,}}/>
-                </div>
+                <Loading />
             )
         }
 
@@ -263,19 +264,37 @@ class Main extends Component {
                                 disabled={currentIndex === loadedVideos.length - 1}
                                 onTouchTap={() => dispatch(loadNextVideo())}
                             ><AvSkipNext /></IconButton>
+                            <IconMenu
+                                iconButtonElement={
+                                    <IconButton><MoreVertIcon /></IconButton>
+                                }
+                                targetOrigin={{horizontal: 'left', vertical: 'top'}}
+                                anchorOrigin={{horizontal: 'left', vertical: 'top'}}
+                            >
+                                <MenuItem
+                                    primaryText="GitHub"
+                                    leftIcon={
+                                        <IconButton
+                                            iconClassName="github-icon"
+                                        />
+                                    }
+                                    href="https://github.com/acmanderson/SubShuffle"
+                                />
+                            </IconMenu>
                         </div>
                     }
                 />
-                <div style={prepareStyles({...styles.root})}>
-                    <div style={prepareStyles({...styles.content})}>
-                        <Paper zDepth={1} style={styles.paper}>
+                <div style={prepareStyles(styles.root)}>
+                    <div style={prepareStyles(styles.content)}>
+                        <Paper zDepth={2} style={styles.paper}>
                             <YouTube
                                 videoId={loadedVideos[currentIndex]}
+                                onEnd={() => this.loadRandomVideo()}
                                 opts={{
                                     width: `100%`,
                                     height: `100%`,
                                     playerVars: {
-                                        autoplay: 0,
+                                        autoplay: 1,
                                     },
                                 }}
                             />

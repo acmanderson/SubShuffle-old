@@ -1,12 +1,11 @@
 import React from "react";
 import {ReactScriptLoader, ReactScriptLoaderMixin} from "react-script-loader";
 import {connect} from "react-redux";
-import {createActions} from 'redux-actions';
-import CircularProgress from "material-ui/CircularProgress";
+import {createActions} from "redux-actions";
+import Loading from "./Loading";
 import Theme from "../Theme";
 import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import getMuiTheme from "material-ui/styles/getMuiTheme";
-import {grey800} from "material-ui/styles/colors";
 import Dialog from "material-ui/Dialog";
 import FlatButton from "material-ui/FlatButton";
 
@@ -80,8 +79,7 @@ let Login = React.createClass({
         ];
         return (
             <MuiThemeProvider muiTheme={getMuiTheme(Theme)}>
-                <div style={{width: `100vw`, height: `100vh`, backgroundColor: grey800}}>
-                    <CircularProgress size={40} style={{left: `calc(50% - 20px)`, top: `calc(50% - 20px)`,}}/>
+                <Loading>
                     <Dialog
                         open={userNeedsToAuthenticate}
                         title="SubShuffle"
@@ -90,7 +88,7 @@ let Login = React.createClass({
                     >
                         SubShuffle requires read-only access to your YouTube account in order to view your subscriptions and to play videos. Click the "Sign In" button to authenticate with your YouTube account.
                     </Dialog>
-                </div>
+                </Loading>
             </MuiThemeProvider>
         );
     }
