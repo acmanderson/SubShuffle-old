@@ -21,13 +21,15 @@ const mainState = handleActions({
 
 const channelState = handleActions({
     ADD_CHANNEL: (state, action) => {
-        let storedSelectedChannels = localStorage.getItem('selectedChannels');
-        if (storedSelectedChannels === null) {
-            storedSelectedChannels = [];
-        }
-
         const channelId = Object.keys(action.payload)[0];
-        const channelSelected = storedSelectedChannels.indexOf(channelId) !== -1;
+        let storedSelectedChannels = localStorage.getItem('selectedChannels');
+        let channelSelected = false;
+
+        if (storedSelectedChannels === null) {
+            channelSelected = true;
+        } else {
+            channelSelected = storedSelectedChannels.indexOf(channelId) !== -1;
+        }
 
         return {
             selectedChannels: channelSelected ? [...state.selectedChannels, channelId] : state.selectedChannels,
