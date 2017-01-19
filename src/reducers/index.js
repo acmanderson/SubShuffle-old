@@ -22,10 +22,16 @@ const mainState = handleActions({
 const channelState = handleActions({
     ADD_CHANNEL: (state, action) => {
         const channelId = Object.keys(action.payload)[0];
-        let storedSelectedChannels = localStorage.getItem('selectedChannels');
         let channelSelected = false;
+        let storedSelectedChannels;
 
-        if (storedSelectedChannels === null) {
+        try {
+            storedSelectedChannels = JSON.parse(localStorage.getItem('selectedChannels'));
+        } catch(e) {
+            storedSelectedChannels = null;
+        }
+
+        if (storedSelectedChannels === null || !Array.isArray(storedSelectedChannels)) {
             channelSelected = true;
         } else {
             channelSelected = storedSelectedChannels.indexOf(channelId) !== -1;
@@ -63,13 +69,13 @@ const channelState = handleActions({
             selectedChannels.splice(index, 1);
         }
 
-        localStorage.selectedChannels = selectedChannels;
+        localStorage.selectedChannels = JSON.stringify(selectedChannels);
 
         return {...state, selectedChannels};
     },
     TOGGLE_ALL_CHANNELS: (state, action) => {
         const selectedChannels = action.payload ? Object.keys(state.channels) : [];
-        localStorage.selectedChannels = selectedChannels;
+        localStorage.selectedChannels = JSON.stringify(selectedChannels);
         return {
             ...state,
             selectedChannels: selectedChannels,
