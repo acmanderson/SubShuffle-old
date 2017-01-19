@@ -20,10 +20,28 @@ const mainState = handleActions({
 });
 
 const channelState = handleActions({
-    ADD_CHANNEL: (state, action) => ({
-        selectedChannels: [...state.selectedChannels, Object.keys(action.payload)[0]],
-        channels: {...state.channels, ...action.payload},
-    }),
+    ADD_CHANNEL: (state, action) => {
+        const channelId = Object.keys(action.payload)[0];
+        let channelSelected = false;
+        let storedSelectedChannels;
+
+        try {
+            storedSelectedChannels = JSON.parse(localStorage.getItem('selectedChannels'));
+        } catch(e) {
+            storedSelectedChannels = null;
+        }
+
+        if (storedSelectedChannels === null || !Array.isArray(storedSelectedChannels)) {
+            channelSelected = true;
+        } else {
+            channelSelected = storedSelectedChannels.indexOf(channelId) !== -1;
+        }
+
+        return {
+            selectedChannels: channelSelected ? [...state.selectedChannels, channelId] : state.selectedChannels,
+            channels: {...state.channels, ...action.payload},
+        };
+    },
     UPDATE_CHANNEL: (state, action) => {
         const updatedChannel = {...state.channels[action.payload.channelId], ...action.payload.data};
         const updatedChannels = {...state.channels, [action.payload.channelId]: updatedChannel};
@@ -51,12 +69,18 @@ const channelState = handleActions({
             selectedChannels.splice(index, 1);
         }
 
+        localStorage.selectedChannels = JSON.stringify(selectedChannels);
+
         return {...state, selectedChannels};
     },
-    TOGGLE_ALL_CHANNELS: (state, action) => ({
-        ...state,
-        selectedChannels: action.payload ? Object.keys(state.channels) : [],
-    }),
+    TOGGLE_ALL_CHANNELS: (state, action) => {
+        const selectedChannels = action.payload ? Object.keys(state.channels) : [];
+        localStorage.selectedChannels = JSON.stringify(selectedChannels);
+        return {
+            ...state,
+            selectedChannels: selectedChannels,
+        };
+    },
 }, {selectedChannels: [], channels: {}});
 
 const loadedVideoState = handleActions({
