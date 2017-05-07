@@ -13,12 +13,13 @@ import IconButton from "material-ui/IconButton";
 import AvShuffle from "material-ui/svg-icons/av/shuffle";
 import AvSkipNext from "material-ui/svg-icons/av/skip-next";
 import AvSkipPrevious from "material-ui/svg-icons/av/skip-previous";
-import MoreVertIcon from 'material-ui/svg-icons/navigation/more-vert';
+import MoreVertIcon from "material-ui/svg-icons/navigation/more-vert";
 import withWidth, {LARGE} from "material-ui/utils/withWidth";
 import Paper from "material-ui/Paper";
 import AppBar from "material-ui/AppBar";
-import MenuItem from 'material-ui/MenuItem';
-import IconMenu from 'material-ui/IconMenu';
+import MenuItem from "material-ui/MenuItem";
+import IconMenu from "material-ui/IconMenu";
+import {OAUTH2_CLIENT_ID, OAUTH2_SCOPES} from "../consts/auth";
 
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
@@ -34,6 +35,7 @@ const {
     loadRandomVideo,
     loadPreviousVideo,
     loadNextVideo,
+    setGapi,
 } = createActions(
     'SET_MAIN_STATE',
     'ADD_CHANNEL',
@@ -44,6 +46,7 @@ const {
     'LOAD_RANDOM_VIDEO',
     'LOAD_PREVIOUS_VIDEO',
     'LOAD_NEXT_VIDEO',
+    'SET_GAPI',
 );
 
 function indexToToken(index) {
@@ -156,7 +159,7 @@ class Main extends Component {
     }
 
     loadRandomVideo() {
-        const {yt, dispatch} = this.props;
+        const {yt, dispatch, gapi} = this.props;
         const videoData = this.getRandomChannelAndIndex();
         const token = indexToToken(videoData.index);
         const requestOpts = {
@@ -168,10 +171,25 @@ class Main extends Component {
             pageToken: token
         };
 
-        yt.playlistItems.list(requestOpts).then(res => {
-            const videoId = res.result.items[0].snippet.resourceId.videoId;
-            dispatch(loadRandomVideo(videoId));
-        }, reason => console.error(reason))
+        function fetchVideo(err) {
+            yt.playlistItems.list(requestOpts).then(res => {
+                const videoId = res.result.items[0].snippet.resourceId.videoId;
+                dispatch(loadRandomVideo(videoId));
+            }, err);
+        }
+
+        // oauth2 tokens expire after an hour, so if the request to load a new video fails
+        // we assume the token expired and try to refresh it
+        fetchVideo(() => {
+            gapi.auth.authorize({
+                client_id: OAUTH2_CLIENT_ID,
+                scope: OAUTH2_SCOPES,
+                immediate: true,
+            }, () => {
+                dispatch(setGapi(gapi));
+                fetchVideo(reason => console.error(reason));
+            });
+        });
     }
 
     getRandomChannelAndIndex() {
@@ -328,6 +346,7 @@ export default withWidth()(connect(state => ({
     channelsLoaded: state.mainState.channelsLoaded,
     toggleAllChecked: state.mainState.toggleAllChecked,
     channelDrawerOpen: state.mainState.channelDrawerOpen,
+    gapi: state.loginState.gapi,
     yt: state.loginState.gapi.client.youtube,
     channels: state.channelState.channels,
     selectedChannels: state.channelState.selectedChannels,

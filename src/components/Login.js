@@ -8,12 +8,7 @@ import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import getMuiTheme from "material-ui/styles/getMuiTheme";
 import Dialog from "material-ui/Dialog";
 import FlatButton from "material-ui/FlatButton";
-
-const SCRIPT_URL = "https://apis.google.com/js/client.js?onload=googleApiClientReady";
-const OAUTH2_CLIENT_ID = '535577359868-1relqi1rem0jbpq6p8l4l8l1lbc69jae.apps.googleusercontent.com';
-const OAUTH2_SCOPES = [
-    'https://www.googleapis.com/auth/youtube.readonly'
-];
+import {OAUTH2_CLIENT_ID, OAUTH2_SCOPES, SCRIPT_URL} from "../consts/auth";
 
 const {
     setUserNeedsToAuthenticate,
@@ -86,7 +81,8 @@ let Login = React.createClass({
                         actions={dialogActions}
                         modal={true}
                     >
-                        SubShuffle requires read-only access to your YouTube account in order to view your subscriptions and to play videos. Click the "Sign In" button to authenticate with your YouTube account.
+                        SubShuffle requires read-only access to your YouTube account in order to view your subscriptions
+                        and to play videos. Click the "Sign In" button to authenticate with your YouTube account.
                     </Dialog>
                 </Loading>
             </MuiThemeProvider>
