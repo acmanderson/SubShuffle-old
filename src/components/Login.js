@@ -31,22 +31,24 @@ let Login = React.createClass({
     onScriptLoaded: function () {
         const {dispatch} = this.props;
         const gapi = Object.assign({}, window.gapi);
-        gapi.auth.init(this.authorize);
+        gapi.auth.init(this.authorize(gapi));
         dispatch(setGapi(gapi));
     },
     onScriptError: function () {
 
     },
-    authorize: function (immediate = true) {
-        const {gapi, dispatch} = this.props;
-        gapi.auth.authorize({
-            client_id: OAUTH2_CLIENT_ID,
-            scope: OAUTH2_SCOPES,
-            immediate: immediate,
-        }, authResult => {
-            dispatch(setGapi(gapi));
-            this.handleAuthResult(authResult);
-        });
+    authorize: function (gapi) {
+        return (immediate = true) => {
+            const {dispatch} = this.props;
+            gapi.auth.authorize({
+                client_id: OAUTH2_CLIENT_ID,
+                scope: OAUTH2_SCOPES,
+                immediate: immediate,
+            }, authResult => {
+                dispatch(setGapi(gapi));
+                this.handleAuthResult(authResult);
+            });
+        }
     },
     handleAuthResult: function (authResult) {
         const {gapi, dispatch, router} = this.props;
