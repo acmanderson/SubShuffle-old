@@ -66,12 +66,12 @@ let Login = React.createClass({
         }
     },
     render: function () {
-        const {userNeedsToAuthenticate} = this.props;
+        const {userNeedsToAuthenticate, gapi} = this.props;
         const dialogActions = [
             <FlatButton
                 label="Sign In"
                 primary={true}
-                onTouchTap={() => this.authorize(false)}
+                onTouchTap={() => this.authorize(gapi)(false)}
             />,
         ];
         return (
