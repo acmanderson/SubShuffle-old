@@ -1,5 +1,4 @@
 import React from "react";
-import {ReactScriptLoader, ReactScriptLoaderMixin} from "react-script-loader";
 import {connect} from "react-redux";
 import {createActions} from "redux-actions";
 import Loading from "./Loading";
@@ -8,7 +7,7 @@ import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
 import getMuiTheme from "material-ui/styles/getMuiTheme";
 import Dialog from "material-ui/Dialog";
 import FlatButton from "material-ui/FlatButton";
-import {OAUTH2_CLIENT_ID, OAUTH2_SCOPES, SCRIPT_URL} from "../consts/auth";
+import {OAUTH2_CLIENT_ID, OAUTH2_SCOPE} from "../consts/auth";
 
 const {
     setUserNeedsToAuthenticate,
@@ -20,35 +19,38 @@ const {
     'SET_GAPI',
 );
 
-window.googleApiClientReady = function () {
-    ReactScriptLoader.triggerOnScriptLoaded(SCRIPT_URL);
-};
-
 let Login = React.createClass({
-    mixins: [ReactScriptLoaderMixin],
-    getScriptURL: () => SCRIPT_URL,
-    deferOnScriptLoaded: () => true,
-    onScriptLoaded: function () {
-        const {dispatch} = this.props;
-        const gapi = Object.assign({}, window.gapi);
-        gapi.auth.init(this.authorize(gapi));
-        dispatch(setGapi(gapi));
+    componentDidMount: function () {
+        const gapi = window.gapi;
+        gapi.load("client:auth2", () => {
+            gapi.auth2.init({client_id: OAUTH2_CLIENT_ID});
+            this.authenticate(gapi);
+        })
     },
-    onScriptError: function () {
-
+    authenticate: function (gapi) {
+        return gapi.auth2.getAuthInstance()
+            .signIn({scope: OAUTH2_SCOPE})
+            .then(() => {
+                    console.log("Sign-in successful");
+                    this.loadClient(gapi);
+                },
+                function (err) {
+                    console.error("Error signing in", err);
+                });
     },
-    authorize: function (gapi) {
-        return (immediate = true) => {
-            const {dispatch} = this.props;
-            gapi.auth.authorize({
-                client_id: OAUTH2_CLIENT_ID,
-                scope: OAUTH2_SCOPES,
-                immediate: immediate,
-            }, authResult => {
-                dispatch(setGapi(gapi));
-                this.handleAuthResult(authResult);
-            });
-        }
+    loadClient: function (gapi) {
+        const {dispatch, router} = this.props;
+        return gapi.client.load("https://www.googleapis.com/discovery/v1/apis/youtube/v3/rest")
+            .then(function () {
+                    console.log("GAPI client loaded for API");
+                    dispatch(setGapi(window.gapi));
+                    dispatch(setUserNeedsToAuthenticate(false));
+                    dispatch(setUserAuthenticated(true));
+                    router.push('/');
+                },
+                function (err) {
+                    console.error("Error loading GAPI client for API", err);
+                });
     },
     handleAuthResult: function (authResult) {
         const {gapi, dispatch, router} = this.props;
@@ -71,7 +73,7 @@ let Login = React.createClass({
             <FlatButton
                 label="Sign In"
                 primary={true}
-                onTouchTap={() => this.authorize(gapi)(false)}
+                onTouchTap={() => this.authenticate(gapi)(false)}
             />,
         ];
         return (

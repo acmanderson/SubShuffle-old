@@ -61,6 +61,14 @@ function indexToToken(index) {
     return `C${token[1]}${token[0]}${token[2]}EAA`;
 }
 
+function chunkArray(array, chunkSize) {
+    let chunks = [];
+    for (let i = 0; i < array.length; i += chunkSize) {
+        chunks.push(array.slice(i, i + chunkSize));
+    }
+    return chunks;
+}
+
 class Main extends Component {
     constructor(props) {
         super(props);
@@ -117,45 +125,50 @@ class Main extends Component {
 
     getUploadData(pageToken = null) {
         const {yt, channels, dispatch} = this.props;
-        let requestOpts = {
-            part: 'statistics,contentDetails',
-            maxResults: 50,
-            fields: 'items(id,statistics(videoCount),contentDetails(relatedPlaylists(uploads))),nextPageToken',
-            id: Object.keys(channels).join(',')
-        };
-        if (pageToken) {
-            requestOpts.pageToken = pageToken;
+        const promises = [];
+        for (const channelsChunk of chunkArray(Object.keys(channels), 50)) {
+            let requestOpts = {
+                part: 'statistics,contentDetails',
+                maxResults: 50,
+                fields: 'items(id,statistics(videoCount),contentDetails(relatedPlaylists(uploads))),nextPageToken',
+                id: channelsChunk.join(',')
+            };
+            if (pageToken) {
+                requestOpts.pageToken = pageToken;
+            }
+
+            promises.push(yt.channels.list(requestOpts).then(res => {
+                const items = res.result.items;
+                for (let i = 0; i < items.length; i++) {
+                    const channelData = items[i];
+                    const channelId = channelData.id;
+                    const videoCount = parseInt(channelData.statistics.videoCount, 10);
+                    if (videoCount > 0) {
+                        dispatch(updateChannel({
+                            channelId,
+                            data: {
+                                uploadsPlaylistId: channelData.contentDetails.relatedPlaylists.uploads,
+                                // TODO: update paging calculation to allow for more than 7936 videos
+                                videoCount: Math.min(videoCount, 7936),
+                                videoList: [...Array(videoCount).keys()],
+                            }
+                        }));
+                    } else {
+                        dispatch(deleteChannel(channelId));
+                    }
+                }
+
+                const nextPageToken = res.result.nextPageToken;
+                if (nextPageToken) {
+                    this.getUploadData(nextPageToken);
+                }
+            }, reason => console.error(reason)));
         }
 
-        yt.channels.list(requestOpts).then(res => {
-            const items = res.result.items;
-            for (let i = 0; i < items.length; i++) {
-                const channelData = items[i];
-                const channelId = channelData.id;
-                const videoCount = parseInt(channelData.statistics.videoCount, 10);
-                if (videoCount > 0) {
-                    dispatch(updateChannel({
-                        channelId,
-                        data: {
-                            uploadsPlaylistId: channelData.contentDetails.relatedPlaylists.uploads,
-                            // TODO: update paging calculation to allow for more than 7936 videos
-                            videoCount: Math.min(videoCount, 7936),
-                            videoList: [...Array(videoCount).keys()],
-                        }
-                    }));
-                } else {
-                    dispatch(deleteChannel(channelId));
-                }
-            }
-
-            const nextPageToken = res.result.nextPageToken;
-            if (nextPageToken) {
-                this.getUploadData(nextPageToken);
-            } else {
-                this.loadRandomVideo();
-                dispatch(setMainState({channelsLoaded: true}));
-            }
-        }, reason => console.error(reason));
+        Promise.all(promises).then(() => {
+            this.loadRandomVideo();
+            dispatch(setMainState({channelsLoaded: true}));
+        })
     }
 
     loadRandomVideo() {
@@ -180,7 +193,9 @@ class Main extends Component {
 
         // oauth2 tokens expire after an hour, so if the request to load a new video fails
         // we assume the token expired and try to refresh it
-        fetchVideo(() => {
+        // TODO: check if this is necessary with new gapi auth flow
+        fetchVideo(() =>
+        {
             gapi.auth.authorize({
                 client_id: OAUTH2_CLIENT_ID,
                 scope: OAUTH2_SCOPES,
@@ -240,13 +255,21 @@ class Main extends Component {
     }
 
     render() {
-        const {channelsLoaded, currentIndex, loadedVideos, channels, selectedChannels, toggleAllChecked, dispatch} = this.props;
+        const {
+            channelsLoaded,
+            currentIndex,
+            loadedVideos,
+            channels,
+            selectedChannels,
+            toggleAllChecked,
+            dispatch
+        } = this.props;
         let channelDrawerOpen = this.props.channelDrawerOpen;
         const styles = this.getStyles();
 
         if (!channelsLoaded) {
             return (
-                <Loading />
+                <Loading/>
             )
         }
 
@@ -273,18 +296,18 @@ class Main extends Component {
                             <IconButton
                                 disabled={currentIndex === 0}
                                 onTouchTap={() => dispatch(loadPreviousVideo())}
-                            ><AvSkipPrevious /></IconButton>
+                            ><AvSkipPrevious/></IconButton>
                             <IconButton
                                 disabled={selectedChannels.length === 0}
                                 onTouchTap={() => this.loadRandomVideo()}
-                            ><AvShuffle /></IconButton>
+                            ><AvShuffle/></IconButton>
                             <IconButton
                                 disabled={currentIndex === loadedVideos.length - 1}
                                 onTouchTap={() => dispatch(loadNextVideo())}
-                            ><AvSkipNext /></IconButton>
+                            ><AvSkipNext/></IconButton>
                             <IconMenu
                                 iconButtonElement={
-                                    <IconButton><MoreVertIcon /></IconButton>
+                                    <IconButton><MoreVertIcon/></IconButton>
                                 }
                                 targetOrigin={{horizontal: 'left', vertical: 'top'}}
                                 anchorOrigin={{horizontal: 'left', vertical: 'top'}}
