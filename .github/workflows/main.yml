@@ -26,5 +26,5 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: 14.x
-      # Runs a single command using the runners shell
+      - run: npm install
       - run: npm run deploy
