@@ -19,7 +19,6 @@ import Paper from "material-ui/Paper";
 import AppBar from "material-ui/AppBar";
 import MenuItem from "material-ui/MenuItem";
 import IconMenu from "material-ui/IconMenu";
-import {OAUTH2_CLIENT_ID, OAUTH2_SCOPES} from "../consts/auth";
 
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
@@ -35,7 +34,6 @@ const {
     loadRandomVideo,
     loadPreviousVideo,
     loadNextVideo,
-    setGapi,
 } = createActions(
     'SET_MAIN_STATE',
     'ADD_CHANNEL',
@@ -77,10 +75,15 @@ class Main extends Component {
         // requires using component state
         this.state = {muiTheme: getMuiTheme(Theme)};
 
-        const {channelsLoaded} = props;
+        const {channelsLoaded, gapi, router} = props;
         if (channelsLoaded) {
             return;
         }
+        gapi.auth2.getAuthInstance().isSignedIn.listen(status => {
+            if (!status) {
+                router.push('/login');
+            }
+        })
 
         this.requestSubscriptions();
     }
@@ -172,7 +175,7 @@ class Main extends Component {
     }
 
     loadRandomVideo() {
-        const {yt, dispatch, gapi} = this.props;
+        const {yt, dispatch} = this.props;
         const videoData = this.getRandomChannelAndIndex();
         const token = indexToToken(videoData.index);
         const requestOpts = {
@@ -184,26 +187,11 @@ class Main extends Component {
             pageToken: token
         };
 
-        function fetchVideo(err) {
-            yt.playlistItems.list(requestOpts).then(res => {
-                const videoId = res.result.items[0].snippet.resourceId.videoId;
-                dispatch(loadRandomVideo(videoId));
-            }, err);
-        }
-
-        // oauth2 tokens expire after an hour, so if the request to load a new video fails
-        // we assume the token expired and try to refresh it
-        // TODO: check if this is necessary with new gapi auth flow
-        fetchVideo(() =>
-        {
-            gapi.auth.authorize({
-                client_id: OAUTH2_CLIENT_ID,
-                scope: OAUTH2_SCOPES,
-                immediate: true,
-            }, () => {
-                dispatch(setGapi(gapi));
-                fetchVideo(reason => console.error(reason));
-            });
+        yt.playlistItems.list(requestOpts).then(res => {
+            const videoId = res.result.items[0].snippet.resourceId.videoId;
+            dispatch(loadRandomVideo(videoId));
+        }, err => {
+            console.error(err);
         });
     }
 

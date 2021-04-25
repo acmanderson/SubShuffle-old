@@ -21,10 +21,17 @@ const {
 
 let Login = React.createClass({
     componentDidMount: function () {
+        const {dispatch, router} = this.props;
         const gapi = window.gapi;
         gapi.load("client:auth2", () => {
             gapi.auth2.init({client_id: OAUTH2_CLIENT_ID});
-            this.authenticate(gapi);
+            dispatch(setGapi(gapi));
+            if (!gapi.auth2.getAuthInstance().isSignedIn.get()) {
+                dispatch(setUserNeedsToAuthenticate(true));
+            } else {
+                dispatch(setUserAuthenticated(true));
+                router.push('/');
+            }
         })
     },
     authenticate: function (gapi) {
@@ -52,28 +59,13 @@ let Login = React.createClass({
                     console.error("Error loading GAPI client for API", err);
                 });
     },
-    handleAuthResult: function (authResult) {
-        const {gapi, dispatch, router} = this.props;
-        if (authResult && !authResult.error) {
-            gapi.client.load('youtube', 'v3').then(() => {
-                dispatch(setGapi(gapi));
-                dispatch(setUserNeedsToAuthenticate(false));
-                dispatch(setUserAuthenticated(true));
-                router.push('/');
-            }, reason => {
-                console.error(reason);
-            });
-        } else {
-            dispatch(setUserNeedsToAuthenticate(true));
-        }
-    },
     render: function () {
         const {userNeedsToAuthenticate, gapi} = this.props;
         const dialogActions = [
             <FlatButton
                 label="Sign In"
                 primary={true}
-                onTouchTap={() => this.authenticate(gapi)(false)}
+                onTouchTap={() => this.authenticate(gapi)}
             />,
         ];
         return (
