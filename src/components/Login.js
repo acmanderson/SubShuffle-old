@@ -67,6 +67,10 @@ let Login = React.createClass({
                 primary={true}
                 onTouchTap={() => this.authenticate(gapi)}
             />,
+            <FlatButton
+                label="Privacy Policy"
+                onTouchTap={() => window.open("/privacy.html", "_blank")}
+            />,
         ];
         return (
             <MuiThemeProvider muiTheme={getMuiTheme(Theme)}>
